@@ -4,17 +4,17 @@ export function Footer() {
 	return (
 		<footer className="pt-[24px] pb-[48px] relative print:hidden">
 			<ul className="text-ui-meta flex items-center justify-center gap-[24px] select-none">
-				<Footer.Link to="https://tempo.xyz" external>
+				<Footer.Link to="https://tokclaw.com" external>
 					About
 				</Footer.Link>
-				<Footer.Link to="https://docs.tempo.xyz" external>
+				<Footer.Link to="https://tokclaw.com" external>
 					Docs
 				</Footer.Link>
-				<Footer.Link to="https://github.com/tempoxyz" external>
+				<Footer.Link to="https://github.com/tokclaw" external>
 					GitHub
 				</Footer.Link>
 				<Footer.Link
-					to="https://github.com/tempoxyz/tempo-apps/discussions/categories/explorer"
+					to="https://github.com/tokclaw/tokclaw-apps/issues"
 					external
 				>
 					Feedback

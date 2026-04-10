@@ -42,11 +42,11 @@ export const Route = createRootRouteWithContext<{
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'Explore - Tempo',
+				title: 'TokClaw Explorer',
 			},
 			{
 				name: 'og:title',
-				content: 'Explore - Tempo',
+				content: 'TokClaw Explorer',
 			},
 			{
 				name: 'viewport',
