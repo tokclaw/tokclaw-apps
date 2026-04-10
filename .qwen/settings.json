@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sleep *)",
+      "Bash(kill *)",
+      "Bash(npx *)",
+      "Bash(xargs *)",
+      "Bash(lsof *)",
+      "Bash(source *)",
+      "Bash(nvm *)",
+      "Bash(pnpm *)",
+      "Bash(ps *)",
+      "Bash(wrangler *)",
+      "Bash(echo *)",
+      "Bash(curl *)",
+      "Bash(python3 *)",
+      "Bash(strings)",
+      "Bash(pnpm exec *)",
+      "Bash(cd *)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(node *)",
+      "Bash(cat)",
+      "Bash(import *)",
+      "Bash(const *)",
+      "Bash(console.log)",
+      "Bash(eof)",
+      "Bash(file *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  },
+  "$version": 3
+}
