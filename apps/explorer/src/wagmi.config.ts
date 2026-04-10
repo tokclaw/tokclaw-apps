@@ -73,10 +73,13 @@ const getFallbackUrls = createIsomorphicFn()
 
 const getTempoTransport = createIsomorphicFn()
 	.client(() => {
+		const chain = getTempoChain()
+		// For TokClaw (chain 7447), use RPC directly — no proxy available
+		const isTokClaw = chain.id === 7447
+		if (isTokClaw) {
+			return http(chain.rpcUrls.default.http[0])
+		}
 		const proxy = getRpcProxyUrl()
-
-		// Browser traffic should only hit the RPC proxy. Direct chain RPC endpoints
-		// may require credentials that are only available server-side.
 		return loadBalance([
 			rateLimit(http(proxy.http), {
 				requestsPerSecond: 20,
@@ -84,8 +87,13 @@ const getTempoTransport = createIsomorphicFn()
 		])
 	})
 	.server(() => {
-		const proxy = getRpcProxyUrl()
+		const chain = getTempoChain()
 		const fallbackUrls = getFallbackUrls()
+		const isTokClaw = chain.id === 7447
+		if (isTokClaw) {
+			return http(chain.rpcUrls.default.http[0])
+		}
+		const proxy = getRpcProxyUrl()
 		return loadBalance([
 			http(proxy.http),
 			...fallbackUrls.http.map((url) => http(url)),

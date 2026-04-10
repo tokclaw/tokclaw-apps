@@ -1,15 +1,11 @@
-export const TOKENLIST_BASE_URL = 'https://tokenlist.tempo.xyz'
+export const TOKENLIST_BASE_URL = 'https://tokenlist.tokclaw.com'
 
 export const TOKENLIST_URLS: Record<number, string> = {
-	4217: `${TOKENLIST_BASE_URL}/list/4217`,
-	42431: `${TOKENLIST_BASE_URL}/list/42431`,
-	31318: `${TOKENLIST_BASE_URL}/list/31318`,
+	7447: `${TOKENLIST_BASE_URL}/list/7447`,
 }
 
 const FEE_TOKEN_BY_CHAIN_ID: Record<number, `0x${string}`> = {
-	4217: '0x20c0000000000000000000000000000000000000',
-	42431: '0x20c0000000000000000000000000000000000001',
-	31318: '0x20c0000000000000000000000000000000000002',
+	7447: '0x20c0000000000000000000000000000000000000',
 }
 
 export function getFeeTokenForChain(

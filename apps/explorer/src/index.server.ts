@@ -66,7 +66,7 @@ const serverEntry = createServerEntry({
 	},
 })
 
-export default Sentry.withSentry(
+const handlerWithSentry = Sentry.withSentry(
 	(env: Env) => ({
 		dsn: process.env.SENTRY_DSN,
 		release: env.CF_VERSION_METADATA?.id,
@@ -98,7 +98,7 @@ export default Sentry.withSentry(
 		},
 	}),
 	{
-		fetch: (request, env, _context) => {
+		fetch: (request, env, context) => {
 			const processEnv = process.env as Record<string, string | undefined>
 			if (env) {
 				for (const [key, value] of Object.entries(env)) {
@@ -106,7 +106,23 @@ export default Sentry.withSentry(
 				}
 			}
 
-			return serverEntry.fetch(request, undefined)
+			return serverEntry.fetch(request, { context })
 		},
 	},
 )
+
+// In dev mode, skip Sentry to avoid AsyncLocalStorage issues with TanStack Start
+export default {
+	fetch: (request: Request, env: Env, context: ExecutionContext) => {
+		if (import.meta.env.DEV) {
+			const processEnv = process.env as Record<string, string | undefined>
+			if (env) {
+				for (const [key, value] of Object.entries(env)) {
+					if (typeof value === 'string') processEnv[key] = value
+				}
+			}
+			return serverEntry.fetch(request, { context })
+		}
+		return handlerWithSentry.fetch(request, env, context)
+	},
+}

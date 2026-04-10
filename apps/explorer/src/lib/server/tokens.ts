@@ -1,9 +1,9 @@
 import { createServerFn } from '@tanstack/react-start'
 import type { Address } from 'ox'
-import { getChainId } from 'wagmi/actions'
 import * as z from 'zod/mini'
 import { getAccountTag } from '#lib/account'
 import { TOKEN_COUNT_MAX } from '#lib/constants'
+import { getTempoChain } from '#wagmi.config'
 import {
 	fetchGenesisBlockTimestamp,
 	fetchTokenCreatedMetadata,
@@ -12,7 +12,6 @@ import {
 } from '#lib/server/tempo-queries'
 import { parseTimestamp } from '#lib/timestamp'
 import { TOKENLIST_URLS } from '#lib/tokenlist'
-import { getWagmiConfig } from '#wagmi.config.ts'
 
 export type Token = {
 	address: Address.Address
@@ -126,10 +125,17 @@ function inferTokenCurrency(entry: TokenListEntry): string {
 export const fetchTokens = createServerFn({ method: 'POST' })
 	.inputValidator((input) => FetchTokensInputSchema.parse(input))
 	.handler(async ({ data }): Promise<TokensApiResponse> => {
+		try {
 		const { offset, limit } = data
 
-		const config = getWagmiConfig()
-		const chainId = getChainId(config)
+		// Use chainId from VITE_TEMPO_ENV if available, otherwise detect from tempo chain
+		// In CF Workers, env vars are not available via process.env, so we use
+		// the chain ID that matches the expected mainnet configuration
+		const tempoChain = getTempoChain()
+		const chainId = tempoChain.id
+
+		console.log('[fetchTokens] chainId:', chainId, 'name:', tempoChain.name)
+
 		const { entries: tokenListEntries } = await getTokenList(chainId)
 		const total = tokenListEntries.length
 		const pageEntries = tokenListEntries.slice(offset, offset + limit)
@@ -153,37 +159,43 @@ export const fetchTokens = createServerFn({ method: 'POST' })
 			const [metadataResult, genesisTimestampResult, perTokenResults] =
 				await Promise.all([
 					fetchTokenCreatedMetadata(chainId, pageAddresses).catch((error) => {
-						console.error('Failed to fetch token metadata:', error)
+						console.error('[fetchTokens] Failed to fetch token metadata:', error)
 						return []
 					}),
 					hasGenesisTokens
 						? fetchGenesisBlockTimestamp(chainId).catch((error) => {
-								console.error('Failed to fetch genesis block timestamp:', error)
+								console.error('[fetchTokens] Failed to fetch genesis block timestamp:', error)
 								return null
 							})
 						: Promise.resolve(null),
 					Promise.allSettled(
-						pageAddresses.map(async (address) => ({
-							address,
-							transferAggregate: await fetchTokenTransferAggregate(
+						pageAddresses.map(async (address) => {
+							const transferAggregate = await fetchTokenTransferAggregate(
 								address,
 								chainId,
 							).catch((error) => {
 								console.error(
-									`Failed to fetch transfer aggregate for ${address}:`,
+									`[fetchTokens] Failed to fetch transfer aggregate for ${address}:`,
 									error,
 								)
 								return {
 									oldestTimestamp: undefined,
 									latestTimestamp: undefined,
 								}
-							}),
-							holdersCount: await fetchTokenHoldersCount(
+							})
+							const holdersCount = await fetchTokenHoldersCount(
 								address,
 								chainId,
 								TOKEN_COUNT_MAX,
-							),
-						})),
+							).catch((error) => {
+								console.error(
+									`[fetchTokens] Failed to fetch holders count for ${address}:`,
+									error,
+								)
+								return { count: 0, capped: false }
+							})
+							return { address, transferAggregate, holdersCount }
+						}),
 					),
 				])
 
@@ -206,7 +218,7 @@ export const fetchTokens = createServerFn({ method: 'POST' })
 
 			for (const result of perTokenResults) {
 				if (result.status !== 'fulfilled') {
-					console.error('Failed to fetch token page metadata:', result.reason)
+					console.error('[fetchTokens] Failed to fetch token page metadata:', result.reason)
 					continue
 				}
 
@@ -245,5 +257,9 @@ export const fetchTokens = createServerFn({ method: 'POST' })
 					holdersCountCapped: holdersCounts.get(addressKey)?.capped,
 				}
 			}),
+		}
+		} catch (error) {
+			console.error('[fetchTokens] Unexpected error:', error)
+			return { offset, limit, total: 0, tokens: [] }
 		}
 	})

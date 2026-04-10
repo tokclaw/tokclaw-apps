@@ -386,7 +386,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 								</AddressHighlightProvider>
 							</BreadcrumbsProvider>
 						</TokenListMembershipProvider>
-						{import.meta.env.DEV && (
+						{false && import.meta.env.DEV && (
 							<TanStackDevtools
 								config={{
 									position: 'bottom-right',

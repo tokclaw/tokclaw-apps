@@ -14,7 +14,11 @@ export function inferTempoEnvFromHostname(
 		host.includes('explorer-mainnet') ||
 		host.includes('explore.mainnet.') ||
 		host.includes('explore.presto.') ||
-		host.includes('explore.4217.')
+		host.includes('explore.4217.') ||
+		host.includes('explore.tokclaw.') ||
+		host.includes('explore.7447.') ||
+		host === 'localhost' ||
+		host.includes('127.0.0.1')
 	) {
 		return 'mainnet'
 	}
@@ -73,7 +77,10 @@ export const getTempoEnv = createIsomorphicFn()
 	})
 	.server(() => {
 		const inferred = inferTempoEnvFromHostname(getRequestUrl().hostname)
-		return inferred ?? normalizeTempoEnv(process.env.VITE_TEMPO_ENV)
+		return inferred ?? normalizeTempoEnv(
+			(typeof process !== 'undefined' && process.env?.VITE_TEMPO_ENV) ||
+			'testnet'
+		)
 	})
 
 export const isTestnet = createIsomorphicFn()
