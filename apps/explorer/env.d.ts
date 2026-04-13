@@ -13,6 +13,12 @@ interface EnvironmentVariables {
 	readonly TEMPO_RPC_KEY: string
 }
 
+interface Env extends EnvironmentVariables {
+	readonly CF_VERSION_METADATA: {
+		readonly id: string
+	}
+}
+
 interface ImportMetaEnv extends EnvironmentVariables {}
 
 interface ImportMeta {

@@ -111,9 +111,58 @@ const handlerWithSentry = Sentry.withSentry(
 	},
 )
 
+// Allowed origins for CORS
+const ALLOWED_ORIGINS = [
+	/^https?:\/\/([a-z0-9-]+\.)*tokclaw\.com$/,
+	/^https?:\/\/localhost(:\d+)?$/,
+]
+
+function isAllowedOrigin(origin: string): boolean {
+	return ALLOWED_ORIGINS.some((pattern) => pattern.test(origin))
+}
+
+function addCorsHeaders(
+	response: Response,
+	origin: string | null,
+): Response {
+	if (!origin || !isAllowedOrigin(origin)) return response
+
+	const newHeaders = new Headers(response.headers)
+	newHeaders.set('Access-Control-Allow-Origin', origin)
+	newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+	newHeaders.set(
+		'Access-Control-Allow-Headers',
+		'Content-Type, Authorization',
+	)
+	newHeaders.set('Access-Control-Max-Age', '86400')
+
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers: newHeaders,
+	})
+}
+
 // In dev mode, skip Sentry to avoid AsyncLocalStorage issues with TanStack Start
 export default {
-	fetch: (request: Request, env: Env, context: ExecutionContext) => {
+	fetch: (request: Request, env: Env, context: any) => {
+		// Handle CORS preflight
+		if (request.method === 'OPTIONS') {
+			const origin = request.headers.get('Origin')
+			if (origin && isAllowedOrigin(origin)) {
+				return new Response(null, {
+					status: 204,
+					headers: {
+						'Access-Control-Allow-Origin': origin,
+						'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+						'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+						'Access-Control-Max-Age': '86400',
+					},
+				})
+			}
+			return new Response(null, { status: 403 })
+		}
+
 		if (import.meta.env.DEV) {
 			const processEnv = process.env as Record<string, string | undefined>
 			if (env) {
@@ -123,6 +172,16 @@ export default {
 			}
 			return serverEntry.fetch(request, { context })
 		}
-		return handlerWithSentry.fetch(request, env, context)
+
+		const responseOrPromise = handlerWithSentry.fetch(request, env, context)
+		
+		// Handle both sync and async responses
+		if (responseOrPromise instanceof Response) {
+			return addCorsHeaders(responseOrPromise, request.headers.get('Origin'))
+		}
+		
+		return responseOrPromise.then((res: Response) =>
+			addCorsHeaders(res, request.headers.get('Origin')),
+		)
 	},
 }
