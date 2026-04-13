@@ -126,138 +126,150 @@ export const fetchTokens = createServerFn({ method: 'POST' })
 	.inputValidator((input) => FetchTokensInputSchema.parse(input))
 	.handler(async ({ data }): Promise<TokensApiResponse> => {
 		try {
-		const { offset, limit } = data
+			const { offset, limit } = data
 
-		// Use chainId from VITE_TEMPO_ENV if available, otherwise detect from tempo chain
-		// In CF Workers, env vars are not available via process.env, so we use
-		// the chain ID that matches the expected mainnet configuration
-		const tempoChain = getTempoChain()
-		const chainId = tempoChain.id
+			// Use chainId from VITE_TEMPO_ENV if available, otherwise detect from tempo chain
+			// In CF Workers, env vars are not available via process.env, so we use
+			// the chain ID that matches the expected mainnet configuration
+			const tempoChain = getTempoChain()
+			const chainId = tempoChain.id
 
-		console.log('[fetchTokens] chainId:', chainId, 'name:', tempoChain.name)
+			console.log('[fetchTokens] chainId:', chainId, 'name:', tempoChain.name)
 
-		const { entries: tokenListEntries } = await getTokenList(chainId)
-		const total = tokenListEntries.length
-		const pageEntries = tokenListEntries.slice(offset, offset + limit)
-		const pageAddresses = pageEntries.map(
-			(entry) => entry.address as Address.Address,
-		)
-		const hasGenesisTokens = pageAddresses.some((address) =>
-			isGenesisTokenAddress(address),
-		)
-
-		const tokenMetadata = new Map<
-			string,
-			{ name: string; symbol: string; currency: string; createdAt?: number }
-		>()
-		const createdAtByAddress = new Map<string, number>()
-		let genesisCreatedAt: number | undefined
-
-		const holdersCounts = new Map<string, { count: number; capped: boolean }>()
-
-		if (pageAddresses.length > 0) {
-			const [metadataResult, genesisTimestampResult, perTokenResults] =
-				await Promise.all([
-					fetchTokenCreatedMetadata(chainId, pageAddresses).catch((error) => {
-						console.error('[fetchTokens] Failed to fetch token metadata:', error)
-						return []
-					}),
-					hasGenesisTokens
-						? fetchGenesisBlockTimestamp(chainId).catch((error) => {
-								console.error('[fetchTokens] Failed to fetch genesis block timestamp:', error)
-								return null
-							})
-						: Promise.resolve(null),
-					Promise.allSettled(
-						pageAddresses.map(async (address) => {
-							const transferAggregate = await fetchTokenTransferAggregate(
-								address,
-								chainId,
-							).catch((error) => {
-								console.error(
-									`[fetchTokens] Failed to fetch transfer aggregate for ${address}:`,
-									error,
-								)
-								return {
-									oldestTimestamp: undefined,
-									latestTimestamp: undefined,
-								}
-							})
-							const holdersCount = await fetchTokenHoldersCount(
-								address,
-								chainId,
-								TOKEN_COUNT_MAX,
-							).catch((error) => {
-								console.error(
-									`[fetchTokens] Failed to fetch holders count for ${address}:`,
-									error,
-								)
-								return { count: 0, capped: false }
-							})
-							return { address, transferAggregate, holdersCount }
-						}),
-					),
-				])
-
-			genesisCreatedAt = parseTimestamp(
-				genesisTimestampResult == null
-					? undefined
-					: typeof genesisTimestampResult === 'bigint'
-						? genesisTimestampResult.toString()
-						: genesisTimestampResult,
+			const { entries: tokenListEntries } = await getTokenList(chainId)
+			const total = tokenListEntries.length
+			const pageEntries = tokenListEntries.slice(offset, offset + limit)
+			const pageAddresses = pageEntries.map(
+				(entry) => entry.address as Address.Address,
+			)
+			const hasGenesisTokens = pageAddresses.some((address) =>
+				isGenesisTokenAddress(address),
 			)
 
-			for (const row of metadataResult) {
-				tokenMetadata.set(getAddressKey(row.token), {
-					name: String(row.name),
-					symbol: String(row.symbol),
-					currency: String(row.currency),
-					createdAt: parseTimestamp(row.block_timestamp),
-				})
-			}
+			const tokenMetadata = new Map<
+				string,
+				{ name: string; symbol: string; currency: string; createdAt?: number }
+			>()
+			const createdAtByAddress = new Map<string, number>()
+			let genesisCreatedAt: number | undefined
 
-			for (const result of perTokenResults) {
-				if (result.status !== 'fulfilled') {
-					console.error('[fetchTokens] Failed to fetch token page metadata:', result.reason)
-					continue
-				}
+			const holdersCounts = new Map<
+				string,
+				{ count: number; capped: boolean }
+			>()
 
-				const addressKey = getAddressKey(result.value.address)
-				const createdAt = parseTimestamp(
-					result.value.transferAggregate.oldestTimestamp,
+			if (pageAddresses.length > 0) {
+				const [metadataResult, genesisTimestampResult, perTokenResults] =
+					await Promise.all([
+						fetchTokenCreatedMetadata(chainId, pageAddresses).catch((error) => {
+							console.error(
+								'[fetchTokens] Failed to fetch token metadata:',
+								error,
+							)
+							return []
+						}),
+						hasGenesisTokens
+							? fetchGenesisBlockTimestamp(chainId).catch((error) => {
+									console.error(
+										'[fetchTokens] Failed to fetch genesis block timestamp:',
+										error,
+									)
+									return null
+								})
+							: Promise.resolve(null),
+						Promise.allSettled(
+							pageAddresses.map(async (address) => {
+								const transferAggregate = await fetchTokenTransferAggregate(
+									address,
+									chainId,
+								).catch((error) => {
+									console.error(
+										`[fetchTokens] Failed to fetch transfer aggregate for ${address}:`,
+										error,
+									)
+									return {
+										oldestTimestamp: undefined,
+										latestTimestamp: undefined,
+									}
+								})
+								const holdersCount = await fetchTokenHoldersCount(
+									address,
+									chainId,
+									TOKEN_COUNT_MAX,
+								).catch((error) => {
+									console.error(
+										`[fetchTokens] Failed to fetch holders count for ${address}:`,
+										error,
+									)
+									return { count: 0, capped: false }
+								})
+								return { address, transferAggregate, holdersCount }
+							}),
+						),
+					])
+
+				genesisCreatedAt = parseTimestamp(
+					genesisTimestampResult == null
+						? undefined
+						: typeof genesisTimestampResult === 'bigint'
+							? genesisTimestampResult.toString()
+							: genesisTimestampResult,
 				)
 
-				if (createdAt != null) {
-					createdAtByAddress.set(addressKey, createdAt)
+				for (const row of metadataResult) {
+					tokenMetadata.set(getAddressKey(row.token), {
+						name: String(row.name),
+						symbol: String(row.symbol),
+						currency: String(row.currency),
+						createdAt: parseTimestamp(row.block_timestamp),
+					})
 				}
 
-				holdersCounts.set(addressKey, result.value.holdersCount)
+				for (const result of perTokenResults) {
+					if (result.status !== 'fulfilled') {
+						console.error(
+							'[fetchTokens] Failed to fetch token page metadata:',
+							result.reason,
+						)
+						continue
+					}
+
+					const addressKey = getAddressKey(result.value.address)
+					const createdAt = parseTimestamp(
+						result.value.transferAggregate.oldestTimestamp,
+					)
+
+					if (createdAt != null) {
+						createdAtByAddress.set(addressKey, createdAt)
+					}
+
+					holdersCounts.set(addressKey, result.value.holdersCount)
+				}
 			}
-		}
 
-		return {
-			offset,
-			limit,
-			total,
-			tokens: pageEntries.map((entry) => {
-				const address = entry.address as Address.Address
-				const addressKey = getAddressKey(address)
-				const metadata = tokenMetadata.get(addressKey)
+			return {
+				offset,
+				limit,
+				total,
+				tokens: pageEntries.map((entry) => {
+					const address = entry.address as Address.Address
+					const addressKey = getAddressKey(address)
+					const metadata = tokenMetadata.get(addressKey)
 
-				return {
-					address,
-					symbol: metadata?.symbol || entry.symbol,
-					name: metadata?.name || entry.name,
-					currency: metadata?.currency || inferTokenCurrency(entry),
-					createdAt:
-						createdAtByAddress.get(addressKey) ??
-						metadata?.createdAt ??
-						(isGenesisTokenAddress(address) ? genesisCreatedAt : undefined),
-					holdersCount: holdersCounts.get(addressKey)?.count,
-					holdersCountCapped: holdersCounts.get(addressKey)?.capped,
-				}
-			}),
-		}
+					return {
+						address,
+						symbol: metadata?.symbol || entry.symbol,
+						name: metadata?.name || entry.name,
+						currency: metadata?.currency || inferTokenCurrency(entry),
+						createdAt:
+							createdAtByAddress.get(addressKey) ??
+							metadata?.createdAt ??
+							(isGenesisTokenAddress(address) ? genesisCreatedAt : undefined),
+						holdersCount: holdersCounts.get(addressKey)?.count,
+						holdersCountCapped: holdersCounts.get(addressKey)?.capped,
+					}
+				}),
+			}
 		} catch (error) {
 			console.error('[fetchTokens] Unexpected error:', error)
 			return { offset, limit, total: 0, tokens: [] }

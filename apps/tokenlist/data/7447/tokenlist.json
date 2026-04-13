@@ -1,7 +1,7 @@
 {
   "$schema": "https://esm.sh/gh/uniswap/token-lists/src/tokenlist.schema.json",
   "name": "Your Chain",
-  "logoURI": "https://esm.sh/gh/tempoxyz/tempo-apps/apps/tokenlist/data/7447/icon.svg",
+  "logoURI": "https://raw.githubusercontent.com/tokclaw/assets/refs/heads/main/tok-logo-2.png",
   "timestamp": "2026-04-10T00:00:00Z",
   "version": {
     "major": 1,
@@ -12,10 +12,10 @@
     {
       "name": "pathFEE",
       "symbol": "FEE",
-      "decimals": 18,
+      "decimals": 6,
       "chainId": 7447,
       "address": "0x20c0000000000000000000000000000000000000",
-      "logoURI": "https://esm.sh/gh/tempoxyz/tempo-apps/apps/tokenlist/data/7447/icons/0x20c0000000000000000000000000000000000000.svg"
+      "logoURI": "https://raw.githubusercontent.com/tokclaw/assets/refs/heads/main/tok-logo-2.png"
     }
   ]
 }

@@ -1,9 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { TOKEN_COUNT_MAX } from '#lib/constants'
-import {
-	fetchTokenCreatedCount,
-	fetchTokenCreatedRows,
-} from '#lib/server/tempo-queries'
+import { fetchTokenCreatedRows } from '#lib/server/tempo-queries'
 import { getTempoChain } from '#wagmi.config.ts'
 
 const SPAM_TOKEN_PATTERN = /\btest|test\b|\bfake|fake\b/i
@@ -15,7 +12,12 @@ export const Route = createFileRoute('/api/tokens/count')({
 				try {
 					const tempoChain = getTempoChain()
 					const chainId = tempoChain.id
-					console.log('[tokens/count] chainId:', chainId, 'name:', tempoChain.name)
+					console.log(
+						'[tokens/count] chainId:',
+						chainId,
+						'name:',
+						tempoChain.name,
+					)
 
 					const allTokens = await fetchTokenCreatedRows(
 						chainId,

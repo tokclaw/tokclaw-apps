@@ -77,9 +77,12 @@ export const getTempoEnv = createIsomorphicFn()
 	})
 	.server(() => {
 		const inferred = inferTempoEnvFromHostname(getRequestUrl().hostname)
-		return inferred ?? normalizeTempoEnv(
-			(typeof process !== 'undefined' && process.env?.VITE_TEMPO_ENV) ||
-			'testnet'
+		return (
+			inferred ??
+			normalizeTempoEnv(
+				(typeof process !== 'undefined' && process.env?.VITE_TEMPO_ENV) ||
+					'testnet',
+			)
 		)
 	})
 
