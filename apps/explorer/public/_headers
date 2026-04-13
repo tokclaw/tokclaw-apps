@@ -9,6 +9,10 @@
 # API endpoints — CORS support for tokclaw.com
 /api/*
   Access-Control-Allow-Origin: https://exp.tokclaw.com
+  Access-Control-Allow-Origin: https://www.tokclaw.com
+  Access-Control-Allow-Origin: https://tokclaw.com
+  Access-Control-Allow-Origin: https://wallet.tokclaw.com
+  Access-Control-Allow-Origin: https://wallet1.tokclaw.com
   Access-Control-Allow-Methods: GET, POST, OPTIONS
   Access-Control-Allow-Headers: Content-Type, Authorization
   Access-Control-Max-Age: 86400
