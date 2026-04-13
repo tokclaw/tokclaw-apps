@@ -5,3 +5,10 @@
 # Preloaded fonts — stable filenames but content rarely changes
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
+
+# API endpoints — CORS support for tokclaw.com
+/api/*
+  Access-Control-Allow-Origin: https://exp.tokclaw.com
+  Access-Control-Allow-Methods: GET, POST, OPTIONS
+  Access-Control-Allow-Headers: Content-Type, Authorization
+  Access-Control-Max-Age: 86400
