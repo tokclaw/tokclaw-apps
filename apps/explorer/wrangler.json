@@ -12,7 +12,7 @@
 	"browser": { "binding": "BROWSER" },
 	"env": {
 		"mainnet": {
-			"name": "explorer-tokclaw",
+			"name": "explorer-mainnet",
 			"routes": [
 				{
 					"custom_domain": true,
