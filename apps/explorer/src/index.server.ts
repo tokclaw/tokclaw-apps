@@ -113,12 +113,18 @@ const handlerWithSentry = Sentry.withSentry(
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
-	/^https?:\/\/([a-z0-9-]+\.)*tokclaw\.com$/,
-	/^https?:\/\/localhost(:\d+)?$/,
+	'https://exp.tokclaw.com',
+	'https://www.tokclaw.com',
+	'https://tokclaw.com',
+	'https://wallet.tokclaw.com',
+	'https://wallet1.tokclaw.com',
+	'http://localhost',
+	'http://localhost:3000',
+	'http://localhost:5173',
 ]
 
 function isAllowedOrigin(origin: string): boolean {
-	return ALLOWED_ORIGINS.some((pattern) => pattern.test(origin))
+	return ALLOWED_ORIGINS.includes(origin)
 }
 
 function addCorsHeaders(
@@ -170,7 +176,10 @@ export default {
 					if (typeof value === 'string') processEnv[key] = value
 				}
 			}
-			return serverEntry.fetch(request, { context })
+			const response = serverEntry.fetch(request, { context })
+			return response instanceof Response
+				? addCorsHeaders(response, request.headers.get('Origin'))
+				: response.then((res: Response) => addCorsHeaders(res, request.headers.get('Origin')))
 		}
 
 		const responseOrPromise = handlerWithSentry.fetch(request, env, context)
