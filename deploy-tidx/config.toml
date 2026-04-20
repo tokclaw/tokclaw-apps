@@ -1,0 +1,37 @@
+# TIDX Configuration for Tokclaw
+
+[http]
+enabled = true
+port = 8080
+bind = "0.0.0.0"
+# trusted_cidrs = ["your-server-ip/32"]  # Optional: สำหรับ admin access
+
+[prometheus]
+enabled = true
+port = 9090
+
+[[chains]]
+name = "tokclaw"
+chain_id = 7447
+rpc_url = "https://rpc.tokclaw.com/"
+pg_url = "postgres://tidx:tidx@postgres:5432/tidx_tokclaw"
+backfill = true
+batch_size = 100
+
+# ClickHouse OLAP engine (optional แต่แนะนำ)
+[chains.clickhouse]
+enabled = true
+url = "http://clickhouse:8123"
+
+[[chains]]
+name = "payso"
+chain_id = 3773
+rpc_url = "http://204.168.179.190:8545"
+pg_url = "postgres://tidx:tidx@postgres:5432/tidx_payso"
+backfill = true
+batch_size = 100
+
+# ClickHouse OLAP engine (shared with other chains)
+[chains.clickhouse]
+enabled = true
+url = "http://clickhouse:8123"
