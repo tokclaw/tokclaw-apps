@@ -21,6 +21,7 @@ const canonicalTempoEnvSchema = z.union([
 	z.literal('devnet'),
 	z.literal('testnet'),
 	z.literal('mainnet'),
+	z.literal('paysonow'),
 ])
 
 const tempoEnvSchema = z.prefault(

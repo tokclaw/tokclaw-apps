@@ -118,6 +118,7 @@ const ALLOWED_ORIGINS = [
 	'https://tokclaw.com',
 	'https://wallet.tokclaw.com',
 	'https://wallet1.tokclaw.com',
+	'https://exp.paysonow.com',
 	'http://localhost',
 	'http://localhost:3000',
 	'http://localhost:5173',
@@ -127,19 +128,13 @@ function isAllowedOrigin(origin: string): boolean {
 	return ALLOWED_ORIGINS.includes(origin)
 }
 
-function addCorsHeaders(
-	response: Response,
-	origin: string | null,
-): Response {
+function addCorsHeaders(response: Response, origin: string | null): Response {
 	if (!origin || !isAllowedOrigin(origin)) return response
 
 	const newHeaders = new Headers(response.headers)
 	newHeaders.set('Access-Control-Allow-Origin', origin)
 	newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-	newHeaders.set(
-		'Access-Control-Allow-Headers',
-		'Content-Type, Authorization',
-	)
+	newHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 	newHeaders.set('Access-Control-Max-Age', '86400')
 
 	return new Response(response.body, {
@@ -179,16 +174,18 @@ export default {
 			const response = serverEntry.fetch(request, { context })
 			return response instanceof Response
 				? addCorsHeaders(response, request.headers.get('Origin'))
-				: response.then((res: Response) => addCorsHeaders(res, request.headers.get('Origin')))
+				: response.then((res: Response) =>
+						addCorsHeaders(res, request.headers.get('Origin')),
+					)
 		}
 
 		const responseOrPromise = handlerWithSentry.fetch(request, env, context)
-		
+
 		// Handle both sync and async responses
 		if (responseOrPromise instanceof Response) {
 			return addCorsHeaders(responseOrPromise, request.headers.get('Origin'))
 		}
-		
+
 		return responseOrPromise.then((res: Response) =>
 			addCorsHeaders(res, request.headers.get('Origin')),
 		)

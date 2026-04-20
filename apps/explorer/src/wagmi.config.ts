@@ -4,7 +4,7 @@ import { createPublicClient } from 'viem'
 import { tempoDevnet, tempoLocalnet } from 'viem/chains'
 import { tempoActions } from 'viem/tempo'
 import { loadBalance, rateLimit } from '@tempo/rpc-utils'
-import { tempoMainnet, tempoTestnet } from './lib/chains'
+import { tempoMainnet, tempoTestnet, tempoPaysonow } from './lib/chains'
 import { getTempoEnv } from './lib/env'
 import {
 	cookieStorage,
@@ -26,7 +26,9 @@ export const getTempoChain = createIsomorphicFn()
 				? tempoDevnet
 				: getTempoEnv() === 'testnet'
 					? tempoTestnet
-					: tempoMainnet,
+					: getTempoEnv() === 'paysonow'
+						? tempoPaysonow
+						: tempoMainnet,
 	)
 	.server(() =>
 		getTempoEnv() === 'mainnet'
@@ -35,7 +37,9 @@ export const getTempoChain = createIsomorphicFn()
 				? tempoDevnet
 				: getTempoEnv() === 'testnet'
 					? tempoTestnet
-					: tempoMainnet,
+					: getTempoEnv() === 'paysonow'
+						? tempoPaysonow
+						: tempoMainnet,
 	)
 
 const RPC_PROXY_HOSTNAME = 'proxy.tempo.xyz'
@@ -74,9 +78,9 @@ const getFallbackUrls = createIsomorphicFn()
 const getTempoTransport = createIsomorphicFn()
 	.client(() => {
 		const chain = getTempoChain()
-		// For TokClaw (chain 7447), use RPC directly — no proxy available
-		const isTokClaw = chain.id === 7447
-		if (isTokClaw) {
+		// For TokClaw (chain 7447) and PaysoNow (chain 3773), use RPC directly — no proxy available
+		const isDirectRpc = chain.id === 7447 || chain.id === 3773
+		if (isDirectRpc) {
 			return http(chain.rpcUrls.default.http[0])
 		}
 		const proxy = getRpcProxyUrl()
@@ -89,8 +93,8 @@ const getTempoTransport = createIsomorphicFn()
 	.server(() => {
 		const chain = getTempoChain()
 		const fallbackUrls = getFallbackUrls()
-		const isTokClaw = chain.id === 7447
-		if (isTokClaw) {
+		const isDirectRpc = chain.id === 7447 || chain.id === 3773
+		if (isDirectRpc) {
 			return http(chain.rpcUrls.default.http[0])
 		}
 		const proxy = getRpcProxyUrl()

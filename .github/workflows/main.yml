@@ -21,7 +21,7 @@ jobs:
     secrets: inherit
     with:
       app: explorer
-      environments: '["mainnet"]'
+      environments: '["mainnet", "paysonow"]'
 
   deploy-fee-payer:
     name: Deploy Fee Payer

@@ -1,7 +1,7 @@
 import { createIsomorphicFn } from '@tanstack/react-start'
 import { getRequestUrl } from '@tanstack/react-start/server'
 
-export type TempoEnv = 'testnet' | 'mainnet' | 'devnet'
+export type TempoEnv = 'testnet' | 'mainnet' | 'devnet' | 'paysonow'
 
 export function inferTempoEnvFromHostname(
 	hostname: string | undefined,
@@ -17,6 +17,7 @@ export function inferTempoEnvFromHostname(
 		host.includes('explore.4217.') ||
 		host.includes('explore.tokclaw.') ||
 		host.includes('explore.7447.') ||
+		host.includes('exp.paysonow.com') ||
 		host === 'localhost' ||
 		host.includes('127.0.0.1')
 	) {
@@ -44,7 +45,10 @@ export function inferTempoEnvFromHostname(
 }
 
 function normalizeTempoEnv(value: string | undefined): TempoEnv {
-	return value === 'mainnet' || value === 'devnet' ? value : 'testnet'
+	if (value === 'mainnet' || value === 'devnet' || value === 'paysonow') {
+		return value
+	}
+	return 'testnet'
 }
 
 export const getRequestURL = createIsomorphicFn()
