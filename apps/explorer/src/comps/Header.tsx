@@ -204,7 +204,7 @@ export namespace Header {
 		const baseClass = 'h-10 w-auto'
 		const classes = className ? `${baseClass} ${className}` : baseClass
 
-		return <img src="/tok-logo-1.png" alt="PaysoNow" className={classes} />
+		return <img src="/payso-logo.png" alt="PaysoNow" className={classes} />
 	}
 
 	export namespace TempoWordmark {
