@@ -5,6 +5,7 @@ import {
 	tempo as tempoMainnet,
 	tempoModerato as tempoTestnet,
 } from '@wagmi/core/chains'
+import { tempoPaysonow } from '#lib/chains.ts'
 
 const verifierUrl =
 	import.meta.env.VITE_VERIFIER_URL ?? 'https://contracts.tempo.xyz'
@@ -24,21 +25,29 @@ export const tempoTestnetExtended = tempoTestnet.extend({
 	feeToken: '0x20c0000000000000000000000000000000000001',
 })
 
+export const tempoPaysonowExtended = tempoPaysonow.extend({
+	verifierUrl,
+	feeToken: '0x20c0000000000000000000000000000000000000',
+})
+
 export const chainIds = [
 	tempoDevnet.id,
 	tempoTestnet.id,
 	tempoMainnet.id,
+	tempoPaysonow.id,
 ] as const
 export type ChainId = (typeof chainIds)[number]
 export const chains = [
 	tempoDevnetExtended,
 	tempoTestnetExtended,
 	tempoMainnetExtended,
+	tempoPaysonowExtended,
 ] as const
 export const chainFeeTokens = {
 	[tempoDevnet.id]: tempoDevnetExtended.feeToken,
 	[tempoTestnet.id]: tempoTestnetExtended.feeToken,
 	[tempoMainnet.id]: tempoMainnetExtended.feeToken,
+	[tempoPaysonow.id]: tempoPaysonowExtended.feeToken,
 } as const
 
 export const sourcifyChains = chains.map((chain) => {
