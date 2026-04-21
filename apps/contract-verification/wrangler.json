@@ -1,6 +1,6 @@
 {
 	"$schema": "https://esm.sh/wrangler/config-schema.json",
-	"name": "contracts-paysonow",
+	"name": "contracts",
 	"compatibility_date": "2026-03-01",
 	"compatibility_flags": [
 		"nodejs_compat"
@@ -9,8 +9,9 @@
 	"keep_vars": true,
 	"workers_dev": true,
 	"preview_urls": true,
+	"logpush": true,
 	"vars": {
-		"WHITELISTED_ORIGINS": "https://paysonow.com,https://*.paysonow.com,https://*.tokenine.workers.dev"
+		"WHITELISTED_ORIGINS": "https://tempo.xyz,https://*.tempo.xyz,https://*.porto.workers.dev"
 	},
 	"ratelimits": [
 		{
@@ -25,15 +26,9 @@
 	"d1_databases": [
 		{
 			"binding": "CONTRACTS_DB",
-			"database_name": "CONTRACTS-PAYSONOW-DB",
+			"database_name": "CONTRACTS-DB",
 			"migrations_dir": "database/drizzle",
-			"database_id": "4cd366fc-1d41-40c3-9231-047d65baa0de"
-		},
-		{
-			"binding": "CONTRACTS_PAYSONOW_DB",
-			"database_name": "CONTRACTS-PAYSONOW-DB",
-			"database_id": "4cd366fc-1d41-40c3-9231-047d65baa0de",
-			"remote": true
+			"database_id": "6af0a7cb-8082-49fb-8221-fdf6c64b7c06"
 		}
 	],
 	"containers": [
@@ -50,6 +45,10 @@
 			{
 				"name": "VERIFICATION_CONTAINER",
 				"class_name": "VerificationContainer"
+			},
+			{
+				"name": "VERIFICATION_JOB_RUNNER",
+				"class_name": "VerificationJobRunner"
 			}
 		]
 	},
@@ -59,13 +58,12 @@
 			"new_sqlite_classes": [
 				"VerificationContainer"
 			]
-		}
-	],
-	"routes": [
+		},
 		{
-			"custom_domain": true,
-			"zone_name": "paysonow.com",
-			"pattern": "contracts.paysonow.com"
+			"tag": "v2",
+			"new_sqlite_classes": [
+				"VerificationJobRunner"
+			]
 		}
 	],
 	"observability": {

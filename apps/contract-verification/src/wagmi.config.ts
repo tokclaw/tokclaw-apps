@@ -1,14 +1,28 @@
 import { Address } from 'ox'
 import * as z from 'zod/mini'
-import {
-	tempoDevnet,
-	tempo as tempoMainnet,
-	tempoModerato as tempoTestnet,
-} from '@wagmi/core/chains'
-import { tempoPaysonow } from '#lib/chains.ts'
+import { tempoDevnet, tempoMainnet, tempoTestnet } from '@wagmi/core/chains'
 
 const verifierUrl =
-	import.meta.env.VITE_VERIFIER_URL ?? 'https://contracts.tempo.xyz'
+	import.meta.env?.VITE_VERIFIER_URL ?? 'https://contracts.tempo.xyz'
+
+// Paysonow chain definition
+export const paysonow = {
+	id: 3773,
+	name: 'Paysonow',
+	nativeCurrency: { name: 'Paysonow', symbol: 'PUSD', decimals: 6 },
+	rpcUrls: {
+		default: {
+			http: ['https://rpc.paysonow.com'],
+			webSocket: [],
+		},
+	},
+} as const
+
+export const paysonowExtended = {
+	...paysonow,
+	verifierUrl,
+	feeToken: null,
+}
 
 export const tempoMainnetExtended = tempoMainnet.extend({
 	verifierUrl,
@@ -25,29 +39,23 @@ export const tempoTestnetExtended = tempoTestnet.extend({
 	feeToken: '0x20c0000000000000000000000000000000000001',
 })
 
-export const tempoPaysonowExtended = tempoPaysonow.extend({
-	verifierUrl,
-	feeToken: '0x20c0000000000000000000000000000000000000',
-})
-
 export const chainIds = [
 	tempoDevnet.id,
 	tempoTestnet.id,
 	tempoMainnet.id,
-	tempoPaysonow.id,
+	paysonow.id,
 ] as const
 export type ChainId = (typeof chainIds)[number]
 export const chains = [
 	tempoDevnetExtended,
 	tempoTestnetExtended,
 	tempoMainnetExtended,
-	tempoPaysonowExtended,
+	paysonowExtended,
 ] as const
 export const chainFeeTokens = {
 	[tempoDevnet.id]: tempoDevnetExtended.feeToken,
 	[tempoTestnet.id]: tempoTestnetExtended.feeToken,
 	[tempoMainnet.id]: tempoMainnetExtended.feeToken,
-	[tempoPaysonow.id]: tempoPaysonowExtended.feeToken,
 } as const
 
 export const sourcifyChains = chains.map((chain) => {
