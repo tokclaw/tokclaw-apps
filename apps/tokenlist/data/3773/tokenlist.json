@@ -1,0 +1,21 @@
+{
+  "$schema": "https://esm.sh/gh/uniswap/token-lists/src/tokenlist.schema.json",
+  "name": "PaysoNow",
+  "logoURI": "https://raw.githubusercontent.com/paysonow/assets/refs/heads/main/payso-logo.png",
+  "timestamp": "2026-04-12T00:00:00Z",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "tokens": [
+    {
+      "name": "PaysoNow USD",
+      "symbol": "PUSD",
+      "decimals": 6,
+      "chainId": 3773,
+      "address": "0x20c0000000000000000000000000000000000000",
+      "logoURI": "https://raw.githubusercontent.com/paysonow/assets/refs/heads/main/payso-logo.png"
+    }
+  ]
+}

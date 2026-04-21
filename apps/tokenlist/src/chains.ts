@@ -20,11 +20,27 @@ export const yourChain = defineChain({
 	},
 })
 
+export const paysoNow = defineChain({
+	id: 3773,
+	name: 'PaysoNow',
+	nativeCurrency: {
+		name: 'PUSD',
+		symbol: 'PUSD',
+		decimals: 6,
+	},
+	rpcUrls: {
+		default: {
+			http: ['https://rpc.paysonow.com'],
+		},
+	},
+})
+
 export const CHAIN_IDS = [
 	tempoDevnet.id,
 	tempoTestnet.id,
 	tempoMainnet.id,
 	yourChain.id,
+	paysoNow.id,
 ] as const
 
 export const chains = {
@@ -32,4 +48,5 @@ export const chains = {
 	[tempoTestnet.id]: tempoTestnet,
 	[tempoMainnet.id]: tempoMainnet,
 	[yourChain.id]: yourChain,
+	[paysoNow.id]: paysoNow,
 }
