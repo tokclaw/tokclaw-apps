@@ -11,42 +11,12 @@
 	"preview_urls": true,
 	"browser": { "binding": "BROWSER" },
 	"vars": {
-		"VITE_TEMPO_ENV": "mainnet",
+		"VITE_TEMPO_ENV": "paysonow",
 		"VITE_SENTRY_DSN": "https://0f252c4cc335811d53f9e996b8a3450a@o4510262603481088.ingest.us.sentry.io/4510858114564096",
 		"SENTRY_TRACES_SAMPLE_RATE": "0.5",
 		"VITE_SENTRY_TRACES_SAMPLE_RATE": "0.5"
 	},
 	"env": {
-		"mainnet": {
-			"name": "explorer-mainnet",
-			"routes": [
-				{
-					"custom_domain": true,
-					"zone_name": "tokclaw.com",
-					"pattern": "exp.tokclaw.com"
-				}
-			],
-			"vars": {
-				"VITE_TEMPO_ENV": "mainnet",
-				"VITE_SENTRY_DSN": "https://0f252c4cc335811d53f9e996b8a3450a@o4510262603481088.ingest.us.sentry.io/4510858114564096",
-				"SENTRY_TRACES_SAMPLE_RATE": "0.5",
-				"VITE_SENTRY_TRACES_SAMPLE_RATE": "0.5"
-			},
-			"version_metadata": {
-				"binding": "CF_VERSION_METADATA"
-			},
-			"workers_dev": true,
-			"browser": { "binding": "BROWSER" },
-			"observability": {
-				"enabled": true,
-				"logs": {
-					"persist": true,
-					"enabled": true,
-					"head_sampling_rate": 1,
-					"invocation_logs": true
-				}
-			}
-		},
 		"paysonow": {
 			"name": "explorer-paysonow",
 			"routes": [
@@ -75,6 +45,24 @@
 					"head_sampling_rate": 1,
 					"invocation_logs": true
 				}
+			}
+		},
+		"testnet": {
+			"name": "explorer-paysonow",
+			"vars": {
+				"VITE_TEMPO_ENV": "testnet",
+				"VITE_SENTRY_DSN": "https://0f252c4cc335811d53f9e996b8a3450a@o4510262603481088.ingest.us.sentry.io/4510858114564096",
+				"SENTRY_TRACES_SAMPLE_RATE": "0.5",
+				"VITE_SENTRY_TRACES_SAMPLE_RATE": "0.5"
+			}
+		},
+		"devnet": {
+			"name": "explorer-paysonow",
+			"vars": {
+				"VITE_TEMPO_ENV": "devnet",
+				"VITE_SENTRY_DSN": "https://0f252c4cc335811d53f9e996b8a3450a@o4510262603481088.ingest.us.sentry.io/4510858114564096",
+				"SENTRY_TRACES_SAMPLE_RATE": "0.5",
+				"VITE_SENTRY_TRACES_SAMPLE_RATE": "0.5"
 			}
 		}
 	},

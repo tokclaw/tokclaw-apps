@@ -1,4 +1,4 @@
-export const TOKENLIST_BASE_URL = 'https://tokenlist.tokclaw.com'
+export const TOKENLIST_BASE_URL = 'https://tokenlist.paysonow.com'
 
 export const TOKENLIST_URLS: Record<number, string> = {
 	7447: `${TOKENLIST_BASE_URL}/list/7447`,

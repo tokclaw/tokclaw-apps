@@ -2,7 +2,7 @@ import { QB, Tidx } from 'tidx.ts'
 
 const tidx = Tidx.create({
 	basicAuth: process.env.TIDX_BASIC_AUTH,
-	baseUrl: 'https://tidx.tokclaw.com',
+	baseUrl: 'https://tidx.paysonow.com',
 })
 
 tidx.on('response', (res) => {

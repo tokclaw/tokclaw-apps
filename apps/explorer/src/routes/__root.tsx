@@ -42,11 +42,11 @@ export const Route = createRootRouteWithContext<{
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'TokClaw Explorer',
+				title: 'PaysoNow Explorer',
 			},
 			{
 				name: 'og:title',
-				content: 'TokClaw Explorer',
+				content: 'PaysoNow Explorer',
 			},
 			{
 				name: 'viewport',

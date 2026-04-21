@@ -4,7 +4,7 @@ import { createPublicClient } from 'viem'
 import { tempoDevnet, tempoLocalnet } from 'viem/chains'
 import { tempoActions } from 'viem/tempo'
 import { loadBalance, rateLimit } from '@tempo/rpc-utils'
-import { tempoMainnet, tempoTestnet, tempoPaysonow } from './lib/chains'
+import { tempoTestnet, tempoPaysonow } from './lib/chains'
 import { getTempoEnv } from './lib/env'
 import {
 	cookieStorage,
@@ -20,26 +20,22 @@ let wagmiConfigSingleton: ReturnType<typeof createConfig> | null = null
 
 export const getTempoChain = createIsomorphicFn()
 	.client(() =>
-		getTempoEnv() === 'mainnet'
-			? tempoMainnet
+		getTempoEnv() === 'paysonow'
+			? tempoPaysonow
 			: getTempoEnv() === 'devnet'
 				? tempoDevnet
 				: getTempoEnv() === 'testnet'
 					? tempoTestnet
-					: getTempoEnv() === 'paysonow'
-						? tempoPaysonow
-						: tempoMainnet,
+					: tempoPaysonow,
 	)
 	.server(() =>
-		getTempoEnv() === 'mainnet'
-			? tempoMainnet
+		getTempoEnv() === 'paysonow'
+			? tempoPaysonow
 			: getTempoEnv() === 'devnet'
 				? tempoDevnet
 				: getTempoEnv() === 'testnet'
 					? tempoTestnet
-					: getTempoEnv() === 'paysonow'
-						? tempoPaysonow
-						: tempoMainnet,
+					: tempoPaysonow,
 	)
 
 const RPC_PROXY_HOSTNAME = 'proxy.tempo.xyz'
@@ -78,8 +74,8 @@ const getFallbackUrls = createIsomorphicFn()
 const getTempoTransport = createIsomorphicFn()
 	.client(() => {
 		const chain = getTempoChain()
-		// For TokClaw (chain 7447) and PaysoNow (chain 3773), use RPC directly — no proxy available
-		const isDirectRpc = chain.id === 7447 || chain.id === 3773
+		// For PaysoNow (chain 3773), use RPC directly — no proxy available
+		const isDirectRpc = chain.id === 3773
 		if (isDirectRpc) {
 			return http(chain.rpcUrls.default.http[0])
 		}
@@ -93,7 +89,7 @@ const getTempoTransport = createIsomorphicFn()
 	.server(() => {
 		const chain = getTempoChain()
 		const fallbackUrls = getFallbackUrls()
-		const isDirectRpc = chain.id === 7447 || chain.id === 3773
+		const isDirectRpc = chain.id === 3773
 		if (isDirectRpc) {
 			return http(chain.rpcUrls.default.http[0])
 		}

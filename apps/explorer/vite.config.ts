@@ -20,7 +20,6 @@ const enabledSchema = z.stringbool()
 const canonicalTempoEnvSchema = z.union([
 	z.literal('devnet'),
 	z.literal('testnet'),
-	z.literal('mainnet'),
 	z.literal('paysonow'),
 ])
 
@@ -31,14 +30,14 @@ const tempoEnvSchema = z.prefault(
 			z.transform((value) =>
 				value === 'moderato'
 					? 'testnet'
-					: value === 'presto'
-						? 'mainnet'
+					: value === 'presto' || value === 'mainnet'
+						? 'paysonow'
 						: value,
 			),
 		),
 		canonicalTempoEnvSchema,
 	),
-	'testnet',
+	'paysonow',
 )
 
 const envConfigSchema = z.object({

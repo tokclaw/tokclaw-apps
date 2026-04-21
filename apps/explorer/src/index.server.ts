@@ -113,12 +113,11 @@ const handlerWithSentry = Sentry.withSentry(
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
-	'https://exp.tokclaw.com',
-	'https://www.tokclaw.com',
-	'https://tokclaw.com',
-	'https://wallet.tokclaw.com',
-	'https://wallet1.tokclaw.com',
 	'https://exp.paysonow.com',
+	'https://www.paysonow.com',
+	'https://paysonow.com',
+	'https://wallet.paysonow.com',
+	'https://wallet1.paysonow.com',
 	'http://localhost',
 	'http://localhost:3000',
 	'http://localhost:5173',

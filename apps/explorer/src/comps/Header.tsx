@@ -14,7 +14,7 @@ import SquareSquare from '~icons/lucide/square-square'
 export function Header(): React.JSX.Element {
 	const tempoEnv = getTempoEnv()
 	const networkBadgeLabel =
-		tempoEnv === 'mainnet' ? null : tempoEnv === 'devnet' ? 'Devnet' : 'Testnet'
+		tempoEnv === 'paysonow' ? null : tempoEnv === 'devnet' ? 'Devnet' : 'Testnet'
 
 	return (
 		<header className="@container relative z-1">
@@ -204,7 +204,7 @@ export namespace Header {
 		const baseClass = 'h-10 w-auto'
 		const classes = className ? `${baseClass} ${className}` : baseClass
 
-		return <img src="/tok-logo-1.png" alt="TokClaw" className={classes} />
+		return <img src="/tok-logo-1.png" alt="PaysoNow" className={classes} />
 	}
 
 	export namespace TempoWordmark {
