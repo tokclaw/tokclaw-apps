@@ -6,7 +6,7 @@ import { useChainId } from 'wagmi'
 import * as z from 'zod/mini'
 
 const CONTRACT_VERIFICATION_API_BASE_URL =
-	'https://contracts.tempo.xyz/v2/contract'
+	'https://contracts.paysonow.com/v2/contract'
 
 const SoliditySettingsSchema = z.object({
 	remappings: z.optional(z.array(z.string())),

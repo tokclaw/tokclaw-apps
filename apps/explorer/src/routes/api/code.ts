@@ -7,7 +7,7 @@ import { zAddress } from '#lib/zod.ts'
 import { getRequestURL } from '#lib/env.ts'
 
 const CONTRACT_VERIFICATION_API_BASE_URL =
-	'https://contracts.tempo.xyz/v2/contract'
+	'https://contracts.paysonow.com/v2/contract'
 
 const SHIKI_THEMES = {
 	light: 'github-light',
