@@ -124,7 +124,20 @@ const ALLOWED_ORIGINS = [
 ]
 
 function isAllowedOrigin(origin: string): boolean {
-	return ALLOWED_ORIGINS.includes(origin)
+	// Check exact match first
+	if (ALLOWED_ORIGINS.includes(origin)) return true
+	
+	// Check wildcard pattern for *.paysonow.com
+	try {
+		const originUrl = new URL(origin)
+		const hostname = originUrl.hostname
+		// Allow any subdomain of paysonow.com (e.g., app.paysonow.com, api.paysonow.com)
+		if (hostname.endsWith('.paysonow.com')) return true
+	} catch {
+		// Invalid URL, already checked in exact match above
+	}
+	
+	return false
 }
 
 function addCorsHeaders(response: Response, origin: string | null): Response {
