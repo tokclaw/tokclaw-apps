@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { Address } from 'ox'
 import type { Config } from 'wagmi'
-import { getChainId } from 'wagmi/actions'
+import { getChainId, readContract } from 'wagmi/actions'
 import { Actions } from 'wagmi/tempo'
 import { hasIndexSupply } from '#lib/env'
 import {
@@ -13,6 +13,31 @@ import { getWagmiConfig } from '#wagmi.config'
 
 const TIP20_DECIMALS = 6
 const MAX_TOKENS = 50
+
+// ERC-20 ABI for fallback metadata fetch
+const ERC20_ABI = [
+	{
+		name: 'name',
+		type: 'function',
+		stateMutability: 'view',
+		inputs: [],
+		outputs: [{ type: 'string' }],
+	},
+	{
+		name: 'symbol',
+		type: 'function',
+		stateMutability: 'view',
+		inputs: [],
+		outputs: [{ type: 'string' }],
+	},
+	{
+		name: 'decimals',
+		type: 'function',
+		stateMutability: 'view',
+		inputs: [],
+		outputs: [{ type: 'uint8' }],
+	},
+] as const
 
 export type TokenBalance = {
 	token: Address.Address
@@ -93,7 +118,7 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 
 					const tokenMetadata = new Map<
 						string,
-						{ name: string; symbol: string; currency: string }
+						{ name: string; symbol: string; currency: string; decimals?: number }
 					>()
 					for (const row of tokenCreatedResult) {
 						tokenMetadata.set(String(row.token).toLowerCase(), {
@@ -111,6 +136,7 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 					if (tokensMissingMetadata.length > 0) {
 						const rpcMetadataResults = await Promise.all(
 							tokensMissingMetadata.map(async (token) => {
+								// Try TIP-20 metadata first
 								try {
 									const metadata = await Actions.token.getMetadata(
 										config as Config,
@@ -118,7 +144,41 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 									)
 									return { token, metadata }
 								} catch {
-									return { token, metadata: null }
+									// Fallback to ERC-20 standard calls
+									try {
+										const [name, symbol, decimals] = await Promise.all([
+											readContract(config as Config, {
+												address: token,
+												abi: ERC20_ABI,
+												functionName: 'name',
+											}).catch(() => ''),
+											readContract(config as Config, {
+												address: token,
+												abi: ERC20_ABI,
+												functionName: 'symbol',
+											}).catch(() => ''),
+											readContract(config as Config, {
+												address: token,
+												abi: ERC20_ABI,
+												functionName: 'decimals',
+											}).catch(() => undefined),
+										])
+
+										if (name || symbol) {
+											return {
+												token,
+												metadata: {
+													name,
+													symbol,
+													decimals: decimals ?? TIP20_DECIMALS,
+													currency: '',
+												},
+											}
+										}
+										return { token, metadata: null }
+									} catch {
+										return { token, metadata: null }
+									}
 								}
 							}),
 						)
@@ -129,6 +189,7 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 									name: metadata.name ?? '',
 									symbol: metadata.symbol ?? '',
 									currency: metadata.currency ?? '',
+									decimals: metadata.decimals,
 								})
 							}
 						}
@@ -143,7 +204,7 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 								name: metadata?.name,
 								symbol: metadata?.symbol,
 								currency: metadata?.currency,
-								decimals: TIP20_DECIMALS,
+								decimals: metadata?.decimals ?? TIP20_DECIMALS,
 							}
 						})
 						.sort((a, b) => {
