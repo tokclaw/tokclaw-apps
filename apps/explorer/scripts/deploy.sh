@@ -29,12 +29,12 @@ while (($#)); do
 done
 
 if [[ -z "$env_name" ]]; then
-	echo "Deploy requires --env {devnet|testnet|mainnet}" >&2
+	echo "Deploy requires --env {devnet|testnet|mainnet|paysonow}" >&2
 	exit 1
 fi
 
 case "$env_name" in
-	devnet|testnet|mainnet) ;;
+	devnet|testnet|mainnet|paysonow) ;;
 	*)
 		echo "Unsupported env: $env_name" >&2
 		exit 1
@@ -44,4 +44,9 @@ esac
 export CLOUDFLARE_ENV="$env_name"
 export VITE_TEMPO_ENV="$env_name"
 
-exec wrangler deploy "${args[@]}"
+# Add --name flag for environment-specific deployments
+if [[ "$env_name" == "paysonow" ]]; then
+	exec wrangler deploy "${args[@]}" --name=explorer-paysonow
+else
+	exec wrangler deploy "${args[@]}"
+fi

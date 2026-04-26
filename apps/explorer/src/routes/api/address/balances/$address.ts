@@ -10,6 +10,7 @@ import {
 } from '#lib/server/tempo-queries'
 import { zAddress } from '#lib/zod'
 import { getWagmiConfig } from '#wagmi.config'
+import { TOKENLIST_URLS } from '#lib/tokenlist'
 
 const TIP20_DECIMALS = 6
 const MAX_TOKENS = 50
@@ -109,23 +110,56 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 						})
 						.slice(0, MAX_TOKENS)
 
-					// Query TokenCreated only for tokens the user holds
+					const tokenMetadata = new Map<
+						string,
+						{ name: string; symbol: string; currency: string; decimals?: number }
+					>()
+					
+					// Step 1: Load from tokenlist (fastest - no RPC needed)
+					try {
+						const tokenlistUrl = TOKENLIST_URLS[chainId]
+						if (tokenlistUrl) {
+							const response = await fetch(tokenlistUrl)
+							if (response.ok) {
+								const tokenlist = (await response.json()) as {
+									tokens: Array<{
+										address: string
+										name: string
+										symbol: string
+										decimals: number
+									}>
+								}
+								for (const token of tokenlist.tokens) {
+									tokenMetadata.set(token.address.toLowerCase(), {
+										name: token.name,
+										symbol: token.symbol,
+										decimals: token.decimals,
+										currency: '',
+									})
+								}
+							}
+						}
+					} catch (error) {
+						console.warn('[balances] Failed to load tokenlist:', error)
+					}
+					
+					// Step 2: Load from TIDX TokenCreated events
 					const topTokenAddresses = topTokens.map((t) => t.token)
 					const tokenCreatedResult = await fetchTokenCreatedMetadata(
 						chainId,
 						topTokenAddresses,
 					).catch(() => [])
-
-					const tokenMetadata = new Map<
-						string,
-						{ name: string; symbol: string; currency: string; decimals?: number }
-					>()
+					
 					for (const row of tokenCreatedResult) {
-						tokenMetadata.set(String(row.token).toLowerCase(), {
-							name: String(row.name),
-							symbol: String(row.symbol),
-							currency: String(row.currency),
-						})
+						const tokenAddr = String(row.token).toLowerCase()
+						// Only use if not already in tokenlist (tokenlist has precedence)
+						if (!tokenMetadata.has(tokenAddr)) {
+							tokenMetadata.set(tokenAddr, {
+								name: String(row.name),
+								symbol: String(row.symbol),
+								currency: String(row.currency),
+							})
+						}
 					}
 
 					// Fetch metadata via RPC for tokens missing from TokenCreated
@@ -223,9 +257,18 @@ export const Route = createFileRoute('/api/address/balances/$address')({
 							return Number(BigInt(b.balance) - BigInt(a.balance))
 						})
 
-					return Response.json({
+					const response = Response.json({
 						balances: tokenBalances,
 					} satisfies BalancesResponse)
+					
+					// Add cache headers for browser caching (5 minutes)
+					response.headers.set('Cache-Control', 'public, max-age=300')
+					response.headers.set(
+						'Cloudflare-CDN-Cache-Control',
+						'max-age=300, stale-while-revalidate=60',
+					)
+					
+					return response
 				} catch (error) {
 					console.error(error)
 					const errorMessage = error instanceof Error ? error.message : error

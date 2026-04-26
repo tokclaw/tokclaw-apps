@@ -15,6 +15,7 @@ import * as Hex from 'ox/Hex'
 import * as React from 'react'
 import { formatUnits } from 'viem'
 import type { Config } from 'wagmi'
+import { readContract } from 'wagmi/actions'
 import { Actions } from 'wagmi/tempo'
 import * as z from 'zod/mini'
 import { Amount } from '#comps/Amount'
@@ -316,6 +317,38 @@ export const Route = createFileRoute('/_layout/address/$address')({
 				QUERY_TIMEOUT_MS,
 			)
 
+			// For non-TIP20 contracts, also try ERC-20 detection
+			const isKnownTokenOrTip20 = isKnownTokenAddress
+			const erc20DetectionPromise = !isKnownTokenOrTip20
+				? timeout(
+						(async () => {
+							try {
+								const bytecode = await getContractBytecode(address)
+								if (!bytecode || bytecode === '0x') return false
+
+								// Try to read symbol - if it works, it's likely an ERC-20
+								const symbol = await readContract(config as Config, {
+									address: address as Address.Address,
+									abi: [
+										{
+											name: 'symbol',
+											type: 'function',
+											stateMutability: 'view',
+											inputs: [],
+											outputs: [{ type: 'string' }],
+										},
+									],
+									functionName: 'symbol',
+								})
+								return !!symbol
+							} catch {
+								return false
+							}
+						})(),
+						QUERY_TIMEOUT_MS,
+					)
+				: Promise.resolve(false)
+
 			const historySources = historySourcesForAddress(
 				address as Address.Address,
 			)
@@ -373,11 +406,13 @@ export const Route = createFileRoute('/_layout/address/$address')({
 				transactionsData,
 				balancesResult,
 				tokenMetadata,
+				isErc20Contract,
 			] = await Promise.all([
 				contractBytecodePromise,
 				transactionsPromise,
 				balancesPromise,
 				tokenMetadataPromise,
+				erc20DetectionPromise,
 			])
 
 			const accountType = getAccountType(contractBytecode)
@@ -386,7 +421,9 @@ export const Route = createFileRoute('/_layout/address/$address')({
 			const contractInfo = knownContractInfo
 			const isKnownToken = isKnownTokenAddress
 			const isToken =
-				isKnownToken || (tokenMetadata !== null && tokenMetadata !== undefined)
+				isKnownToken ||
+				(tokenMetadata !== null && tokenMetadata !== undefined) ||
+				(isErc20Contract ?? false)
 			// Discard balance results for token addresses to avoid stale/misleading data
 			const balancesData = isToken ? undefined : balancesResult
 			const contractSource: ContractSource | undefined = undefined
