@@ -1,25 +1,21 @@
 {
   "$schema": "https://esm.sh/gh/uniswap/token-lists/src/tokenlist.schema.json",
-  "name": "PaysoNow Mainnet",
-  "logoURI": "https://esm.sh/gh/tempoxyz/tempo-apps/apps/tokenlist/data/3773/icons/paysonow.svg",
+  "name": "PaysoNow",
+  "logoURI": "https://raw.githubusercontent.com/paysonow/assets/refs/heads/main/payso-logo.png",
   "timestamp": "2026-04-21T00:00:00Z",
   "version": {
     "major": 1,
-    "minor": 0,
+    "minor": 1,
     "patch": 0
   },
   "tokens": [
     {
-      "name": "PUSD",
+      "name": "PaysoNow USD",
       "symbol": "PUSD",
       "decimals": 6,
       "chainId": 3773,
       "address": "0x20c0000000000000000000000000000000000000",
-      "logoURI": "https://esm.sh/gh/tempoxyz/tempo-apps/apps/tokenlist/data/3773/icons/0x20c0000000000000000000000000000000000000.svg",
-      "extensions": {
-        "chain": "paysonow",
-        "label": "PUSD"
-      }
+      "logoURI": "https://raw.githubusercontent.com/paysonow/assets/refs/heads/main/payso-logo.png"
     },
     {
       "name": "Sao Mai Solar 2024",
