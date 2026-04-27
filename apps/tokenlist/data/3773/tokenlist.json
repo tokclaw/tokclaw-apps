@@ -6,7 +6,7 @@
   "version": {
     "major": 1,
     "minor": 1,
-    "patch": 1
+    "patch": 2
   },
   "tokens": [
     {
@@ -225,6 +225,17 @@
       "extensions": {
         "chain": "paysonow",
         "label": "EUROSO124"
+      }
+    },
+    {
+      "name": "MGW Token",
+      "symbol": "MGW",
+      "decimals": 18,
+      "chainId": 3773,
+      "address": "0x3851eC8c99d82d8BA0b5A8834052fAed177f591f",
+      "extensions": {
+        "chain": "paysonow",
+        "label": "MGW"
       }
     }
   ]
